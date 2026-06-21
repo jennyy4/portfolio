@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
   text3d.appendChild(grain);
 
   // ---------- Ajuste de tamaño: la palabra ocupa casi todo el ancho ----------
-  const FILL_RATIO = 0.475; // % del ancho del hero que debe ocupar la palabra (5% más pequeño)
+  const FILL_RATIO = 0.4513; // % del ancho del hero que debe ocupar la palabra (otro 5% más pequeño)
 
   function fitText() {
     text3d.style.setProperty("--fit-scale", "1");
