@@ -1,66 +1,76 @@
-const title = document.querySelector(".hero-title");
+const text = document.querySelector(".frase-text");
+const cursorImage = document.querySelector(".cursor-image");
 
-const text = title.textContent.trim();
-title.innerHTML = "";
+let mouseX = window.innerWidth / 2;
+let mouseY = window.innerHeight / 2;
 
-text.split("").forEach((letter, index) => {
-  const span = document.createElement("span");
-  span.classList.add("char");
-  span.textContent = letter;
-  span.dataset.char = letter;
-  span.style.setProperty("--i", index);
-  title.appendChild(span);
+let currentX = mouseX;
+let currentY = mouseY;
+
+let lastX = mouseX;
+let lastY = mouseY;
+
+let speed = 0;
+let targetSpeed = 0;
+
+window.addEventListener("mousemove", (e) => {
+  mouseX = e.clientX;
+  mouseY = e.clientY;
+
+  const dx = mouseX - lastX;
+  const dy = mouseY - lastY;
+
+  targetSpeed = Math.sqrt(dx * dx + dy * dy);
+
+  lastX = mouseX;
+  lastY = mouseY;
+
+  if (cursorImage) {
+    cursorImage.style.opacity = "1";
+  }
 });
 
-const chars = title.querySelectorAll(".char");
-
-title.addEventListener("mousemove", (event) => {
-  chars.forEach((char) => {
-    const rect = char.getBoundingClientRect();
-
-    const charX = rect.left + rect.width / 2;
-    const charY = rect.top + rect.height / 2;
-
-    const distanceX = event.clientX - charX;
-    const distanceY = event.clientY - charY;
-
-    const distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
-    const maxDistance = 260;
-
-    const strength = Math.max(0, 1 - distance / maxDistance);
-
-    const moveX = distanceX * 0.055 * strength;
-    const moveY = distanceY * 0.04 * strength;
-
-    const rotateY = distanceX * 0.045 * strength;
-    const rotateX = -distanceY * 0.045 * strength;
-
-    const depth = 80 * strength;
-    const skew = distanceX * 0.018 * strength;
-
-    const shadowX = -distanceX * 0.035 * strength + 8;
-    const shadowY = -distanceY * 0.035 * strength + 8;
-
-    char.style.setProperty("--mx", moveX.toFixed(2));
-    char.style.setProperty("--my", moveY.toFixed(2));
-    char.style.setProperty("--rx", rotateX.toFixed(2));
-    char.style.setProperty("--ry", rotateY.toFixed(2));
-    char.style.setProperty("--depth", depth.toFixed(2));
-    char.style.setProperty("--skew", skew.toFixed(2));
-    char.style.setProperty("--shadow-x", shadowX.toFixed(2));
-    char.style.setProperty("--shadow-y", shadowY.toFixed(2));
-  });
+window.addEventListener("mouseleave", () => {
+  if (cursorImage) {
+    cursorImage.style.opacity = "0";
+  }
 });
 
-title.addEventListener("mouseleave", () => {
-  chars.forEach((char) => {
-    char.style.setProperty("--mx", 0);
-    char.style.setProperty("--my", 0);
-    char.style.setProperty("--rx", 0);
-    char.style.setProperty("--ry", 0);
-    char.style.setProperty("--depth", 0);
-    char.style.setProperty("--skew", 0);
-    char.style.setProperty("--shadow-x", 8);
-    char.style.setProperty("--shadow-y", 8);
-  });
-});
+function animate() {
+  currentX += (mouseX - currentX) * 0.12;
+  currentY += (mouseY - currentY) * 0.12;
+
+  speed += (targetSpeed - speed) * 0.15;
+  targetSpeed *= 0.9;
+
+  const centerX = window.innerWidth / 2;
+  const centerY = window.innerHeight / 2;
+
+  const distanceX = (currentX - centerX) / centerX;
+  const distanceY = (currentY - centerY) / centerY;
+
+  const rotate = distanceX * 4;
+  const skew = distanceX * 7;
+  const tx = distanceX * 18;
+  const ty = distanceY * 10;
+
+  const blur = Math.min(speed * 0.045, 7);
+  const scaleX = 1 + Math.min(speed * 0.0009, 0.035);
+  const scaleY = 1 - Math.min(speed * 0.0005, 0.025);
+
+  text.style.setProperty("--rotate", `${rotate}deg`);
+  text.style.setProperty("--skew", `${skew}deg`);
+  text.style.setProperty("--tx", `${tx}px`);
+  text.style.setProperty("--ty", `${ty}px`);
+  text.style.setProperty("--blur", `${blur}px`);
+  text.style.setProperty("--scaleX", scaleX);
+  text.style.setProperty("--scaleY", scaleY);
+
+  if (cursorImage) {
+    cursorImage.style.transform = `translate(${currentX}px, ${currentY}px) translate(-50%, -50%)`;
+  }
+
+  requestAnimationFrame(animate);
+}
+
+animate();
