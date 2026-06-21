@@ -1,102 +1,66 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const hero = document.querySelector(".hero");
-  const wrap = document.getElementById("text3dWrap");
-  const text3d = document.getElementById("text3d");
+const title = document.querySelector(".hero-title");
 
-  const WORD = "FRASE";
+const text = title.textContent.trim();
+title.innerHTML = "";
 
-  // Capa de relleno: el texto sólido y nítido (sin capas de halo/sombra)
-  const fill = document.createElement("div");
-  fill.className = "layer fill";
-  fill.textContent = WORD;
-  fill.style.setProperty("--z", "0px");
-  text3d.appendChild(fill);
+text.split("").forEach((letter, index) => {
+  const span = document.createElement("span");
+  span.classList.add("char");
+  span.textContent = letter;
+  span.dataset.char = letter;
+  span.style.setProperty("--i", index);
+  title.appendChild(span);
+});
 
-  // Capa de grano: textura tipo spray, encima del relleno
-  const grain = document.createElement("div");
-  grain.className = "layer grain";
-  grain.textContent = WORD;
-  grain.style.setProperty("--z", "0px");
-  text3d.appendChild(grain);
+const chars = title.querySelectorAll(".char");
 
-  // ---------- Ajuste de tamaño: la palabra ocupa casi todo el ancho ----------
-  const FILL_RATIO = 0.4513; // % del ancho del hero que debe ocupar la palabra (otro 5% más pequeño)
+title.addEventListener("mousemove", (event) => {
+  chars.forEach((char) => {
+    const rect = char.getBoundingClientRect();
 
-  function fitText() {
-    text3d.style.setProperty("--fit-scale", "1");
-    requestAnimationFrame(() => {
-      const naturalWidth = fill.getBoundingClientRect().width;
-      const targetWidth = wrap.clientWidth * FILL_RATIO;
-      if (naturalWidth > 0) {
-        const scale = targetWidth / naturalWidth;
-        text3d.style.setProperty("--fit-scale", scale.toFixed(4));
-      }
-    });
-  }
+    const charX = rect.left + rect.width / 2;
+    const charY = rect.top + rect.height / 2;
 
-  fitText();
+    const distanceX = event.clientX - charX;
+    const distanceY = event.clientY - charY;
 
-  let resizeTimeout;
-  window.addEventListener("resize", () => {
-    clearTimeout(resizeTimeout);
-    resizeTimeout = setTimeout(fitText, 120);
+    const distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
+    const maxDistance = 260;
+
+    const strength = Math.max(0, 1 - distance / maxDistance);
+
+    const moveX = distanceX * 0.055 * strength;
+    const moveY = distanceY * 0.04 * strength;
+
+    const rotateY = distanceX * 0.045 * strength;
+    const rotateX = -distanceY * 0.045 * strength;
+
+    const depth = 80 * strength;
+    const skew = distanceX * 0.018 * strength;
+
+    const shadowX = -distanceX * 0.035 * strength + 8;
+    const shadowY = -distanceY * 0.035 * strength + 8;
+
+    char.style.setProperty("--mx", moveX.toFixed(2));
+    char.style.setProperty("--my", moveY.toFixed(2));
+    char.style.setProperty("--rx", rotateX.toFixed(2));
+    char.style.setProperty("--ry", rotateY.toFixed(2));
+    char.style.setProperty("--depth", depth.toFixed(2));
+    char.style.setProperty("--skew", skew.toFixed(2));
+    char.style.setProperty("--shadow-x", shadowX.toFixed(2));
+    char.style.setProperty("--shadow-y", shadowY.toFixed(2));
   });
+});
 
-  // Mostrar con fade-in al cargar
-  requestAnimationFrame(() => {
-    wrap.classList.add("visible");
+title.addEventListener("mouseleave", () => {
+  chars.forEach((char) => {
+    char.style.setProperty("--mx", 0);
+    char.style.setProperty("--my", 0);
+    char.style.setProperty("--rx", 0);
+    char.style.setProperty("--ry", 0);
+    char.style.setProperty("--depth", 0);
+    char.style.setProperty("--skew", 0);
+    char.style.setProperty("--shadow-x", 8);
+    char.style.setProperty("--shadow-y", 8);
   });
-
-  // ---------- Reacción al cursor ----------
-  const maxRotate = 14;  // grados máximos de inclinación 3D
-  const ease = 0.07;     // suavizado (lerp) -> inercia del movimiento
-
-  let targetRX = 0;
-  let targetRY = 0;
-  let currentRX = 0;
-  let currentRY = 0;
-
-  function handleMove(e) {
-    const rect = wrap.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-
-    const offsetX = (e.clientX - centerX) / (rect.width / 2);
-    const offsetY = (e.clientY - centerY) / (rect.height / 2);
-
-    const clampedX = Math.max(-1.3, Math.min(1.3, offsetX));
-    const clampedY = Math.max(-1.3, Math.min(1.3, offsetY));
-
-    // Si el cursor está a la izquierda, el volumen responde hacia ese lado, etc.
-    targetRY = clampedX * maxRotate;
-    targetRX = -clampedY * maxRotate;
-  }
-
-  function resetTarget() {
-    targetRX = 0;
-    targetRY = 0;
-  }
-
-  hero.addEventListener("mousemove", handleMove);
-  hero.addEventListener("mouseleave", resetTarget);
-
-  function lerp(a, b, t) {
-    return a + (b - a) * t;
-  }
-
-  function animate() {
-    currentRX = lerp(currentRX, targetRX, ease);
-    currentRY = lerp(currentRY, targetRY, ease);
-
-    text3d.style.setProperty("--rx", `${currentRX.toFixed(2)}deg`);
-    text3d.style.setProperty("--ry", `${currentRY.toFixed(2)}deg`);
-
-    // El parallax de las capas de halo ya ocurre solo: al estar en distinta
-    // translateZ dentro de un contenedor con perspective + preserve-3d,
-    // rotateX/rotateY las desplaza de forma realista sin cálculos extra.
-
-    requestAnimationFrame(animate);
-  }
-
-  requestAnimationFrame(animate);
 });
