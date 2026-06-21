@@ -28,6 +28,14 @@ document.addEventListener("DOMContentLoaded", () => {
   fill.textContent = WORD;
   text3d.appendChild(fill);
 
+  // Capa borrosa: duplicado del texto, se ve únicamente fuera del círculo
+  // de la "lupa de nitidez" que sigue al cursor (ver más abajo). En reposo
+  // permanece invisible (--lens-blur-opacity: 0).
+  const blurred = document.createElement("div");
+  blurred.className = "layer blurred";
+  blurred.textContent = WORD;
+  text3d.appendChild(blurred);
+
   // Capa de grano: textura tipo spray, encima del relleno
   const grain = document.createElement("div");
   grain.className = "layer grain";
@@ -54,6 +62,13 @@ document.addEventListener("DOMContentLoaded", () => {
         // tener solo hijos position:absolute y no sirve para detectar hover
         textHit.style.width = `${(naturalWidth * scale * HIT_PADDING).toFixed(1)}px`;
         textHit.style.height = `${(naturalHeight * scale * HIT_PADDING).toFixed(1)}px`;
+
+        // radio de la "lupa de nitidez", proporcional a la altura real del
+        // texto ya escalado, para que se vea coherente en cualquier tamaño
+        // de pantalla
+        const renderedHeight = naturalHeight * scale;
+        spotCore = renderedHeight * 0.55;
+        spotFeather = renderedHeight * 0.5;
       }
     });
   }
@@ -83,15 +98,40 @@ document.addEventListener("DOMContentLoaded", () => {
   const EASE_ACTIVE = 0.14;   // suavizado mientras el cursor está activo
   const EASE_REST   = 0.055;  // suavizado al volver al reposo (más lento = más orgánico)
 
-  const MAX_ROTATE      = 6;     // grados de rotación Z máxima según posición del cursor
-  const MAX_TILT        = 10;    // grados de inclinación 3D máxima (volumen)
+  const MAX_ROTATE      = 7;     // grados de rotación Z máxima (pivota en el punto de presión)
+  const MAX_TILT        = 12;    // grados de inclinación 3D máxima (volumen)
   const MAX_SKEW        = 8;     // grados de skew horizontal máximo según velocidad
   const MAX_MOVE_X      = 20;    // px de desplazamiento horizontal máximo
   const MAX_MOVE_Y      = 12;    // px de desplazamiento vertical máximo
   const MAX_SCALE_DELTA = 0.03;  // variación de escala máxima por velocidad
-  const MAX_BLUR        = 4.5;   // px de motion blur máximo
+  const MAX_BLUR        = 4.5;   // px de motion blur máximo (del bloque entero, al moverse rápido)
   const SPEED_CLAMP     = 3.2;   // px/ms tope para no disparar los valores
   const VIBE_AMOUNT     = 1.4;   // px de micro-vibración orgánica máxima
+
+  // El giro y la inclinación ya no dependen de "en qué lado del bloque
+  // está el cursor respecto al centro" (eso ahora lo cubre la traslación),
+  // sino de la VELOCIDAD del cursor: como --origin-x/--origin-y ancla el
+  // pivote justo en el punto donde está el ratón (ver más abajo), girar
+  // según el movimiento reciente da la sensación de estar empujando/
+  // presionando esa zona exacta, como si fuese un material con cierta
+  // resistencia.
+  const TILT_VEL_FACTOR = 7;     // grados de inclinación por cada px/ms de velocidad
+  const ROT_VEL_FACTOR  = 4.5;   // grados de rotación Z por cada px/ms de velocidad
+
+  // ---------- "Lupa de nitidez" que sigue al cursor ----------
+  const LENS_POS_EASE        = 0.22;  // suavizado de la posición de la lupa (rápido, debe sentirse precisa)
+  const LENS_STRENGTH_EASE   = 0.085; // suavizado de la apertura/cierre del círculo (efecto "iris")
+  const MAX_LENS_BLUR_OPACITY = 0.92; // opacidad máxima de la capa borrosa fuera de la lupa
+  const GRAIN_OPACITY_REST    = 0.55; // opacidad del grano en reposo (igual que el diseño original)
+  const GRAIN_OPACITY_ACTIVE  = 0.85; // opacidad del grano reforzada mientras la lupa está activa
+
+  let spotCore = 90;     // radio (px) de la zona nítida a fuerza máxima de lupa; lo recalcula fitText()
+  let spotFeather = 70;  // ancho (px) del difuminado del borde de la lupa; lo recalcula fitText()
+
+  let lensX = 50, lensY = 50;             // posición actual de la lupa (%), suavizada
+  let lensTargetX = 50, lensTargetY = 50; // posición objetivo de la lupa (%), según el cursor
+  let lensStrength = 0;                   // 0 = lupa cerrada (reposo), 1 = lupa totalmente abierta
+  let lensTargetStrength = 0;
 
   let lastClientX = 0;
   let lastClientY = 0;
@@ -150,11 +190,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const speed = clamp(Math.hypot(velX, velY), 0, SPEED_CLAMP);
 
+    // Posición del cursor respecto a la capa de relleno (#fill), en
+    // porcentaje de su propio recuadro. Esto alimenta tanto el centro de
+    // la "lupa de nitidez" como el pivote del giro (--origin-x/--origin-y):
+    // ambos deben apuntar exactamente a donde está el ratón sobre el texto.
+    const fillRect = fill.getBoundingClientRect();
+    if (fillRect.width > 0 && fillRect.height > 0) {
+      lensTargetX = ((e.clientX - fillRect.left) / fillRect.width) * 100;
+      lensTargetY = ((e.clientY - fillRect.top) / fillRect.height) * 100;
+    }
+
     if (isOverText) {
-      // rotación Z + inclinación 3D: hacia qué lado está el cursor
-      targetRot = offsetX * MAX_ROTATE;
-      targetTiltX = -offsetY * MAX_TILT; // arriba/abajo -> inclina el "volumen"
-      targetTiltY = offsetX * MAX_TILT;  // izquierda/derecha
+      // El bloque pivota justo en el punto del cursor (ver --origin-x/-y
+      // en animate()), así que el giro y la inclinación ya no dependen de
+      // la posición respecto al centro, sino de la velocidad reciente:
+      // así se siente como si esa zona concreta estuviera siendo
+      // empujada/presionada en la dirección en que se mueve el ratón.
+      targetTiltY = clamp(velX * TILT_VEL_FACTOR, -MAX_TILT, MAX_TILT);
+      targetTiltX = clamp(-velY * TILT_VEL_FACTOR, -MAX_TILT, MAX_TILT);
+      targetRot = clamp(velX * ROT_VEL_FACTOR, -MAX_ROTATE, MAX_ROTATE);
 
       // skew horizontal: el "empujón" lateral, proporcional a la velocidad en X
       targetSkew = clamp(velX * 7, -MAX_SKEW, MAX_SKEW);
@@ -166,6 +220,9 @@ document.addEventListener("DOMContentLoaded", () => {
       // escala ligera y blur, ambos en función de la velocidad (no de la posición)
       targetScale = 1 + Math.min(speed * 0.016, MAX_SCALE_DELTA);
       targetBlur = Math.min(speed * 2.2, MAX_BLUR);
+
+      // abre la lupa de nitidez mientras el cursor está sobre el texto
+      lensTargetStrength = 1;
     }
 
     lastClientX = e.clientX;
@@ -202,6 +259,9 @@ document.addEventListener("DOMContentLoaded", () => {
     targetBlur = 0;
     velX = 0;
     velY = 0;
+
+    // cierra la lupa de nitidez (vuelve a verse todo nítido, como en reposo)
+    lensTargetStrength = 0;
   }
 
   // El movimiento del cursor se escucha en todo el hero para detectar
@@ -243,6 +303,32 @@ document.addEventListener("DOMContentLoaded", () => {
     text3d.style.setProperty("--ty", `${(curTY + vibeY).toFixed(2)}px`);
     text3d.style.setProperty("--scale-dyn", curScale.toFixed(4));
     text3d.style.setProperty("--blur", `${curBlur.toFixed(2)}px`);
+
+    // ---------- Lupa de nitidez + pivote en el punto de presión ----------
+    lensX = lerp(lensX, lensTargetX, LENS_POS_EASE);
+    lensY = lerp(lensY, lensTargetY, LENS_POS_EASE);
+    lensStrength = lerp(lensStrength, lensTargetStrength, LENS_STRENGTH_EASE);
+
+    // radio de la zona nítida y de su difuminado, creciendo desde 0 (lupa
+    // cerrada, todo nítido) hasta el tamaño completo (lupa abierta)
+    const holeRadius = lensStrength * spotCore;
+    const featherWidth = lensStrength * spotFeather;
+    const blurOpacity = lensStrength * MAX_LENS_BLUR_OPACITY;
+    const grainOpacity = lerp(GRAIN_OPACITY_REST, GRAIN_OPACITY_ACTIVE, lensStrength);
+
+    // el pivote del giro viaja del centro (reposo) hacia el cursor a medida
+    // que la lupa se abre, y vuelve solo al centro cuando se cierra
+    const originX = lerp(50, lensX, lensStrength);
+    const originY = lerp(50, lensY, lensStrength);
+
+    text3d.style.setProperty("--lens-x", `${lensX.toFixed(2)}%`);
+    text3d.style.setProperty("--lens-y", `${lensY.toFixed(2)}%`);
+    text3d.style.setProperty("--lens-hole", `${holeRadius.toFixed(1)}px`);
+    text3d.style.setProperty("--lens-feather", `${featherWidth.toFixed(1)}px`);
+    text3d.style.setProperty("--lens-blur-opacity", blurOpacity.toFixed(3));
+    text3d.style.setProperty("--lens-grain-opacity", grainOpacity.toFixed(3));
+    text3d.style.setProperty("--origin-x", `${originX.toFixed(2)}%`);
+    text3d.style.setProperty("--origin-y", `${originY.toFixed(2)}%`);
 
     requestAnimationFrame(animate);
   }
