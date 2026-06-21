@@ -17,7 +17,25 @@
   --tx: 0px;          /* desplazamiento horizontal */
   --ty: 0px;          /* desplazamiento vertical */
   --scale-dyn: 1;      /* escala ligera según velocidad */
-  --blur: 0px;         /* motion blur según velocidad */
+  --blur: 0px;         /* motion blur (del bloque entero) según velocidad */
+
+  /* ---- "Lupa de nitidez": círculo que sigue al cursor sobre el texto ----
+     Fuera del círculo el texto se ve borroso + grain; dentro, limpio y
+     nítido. JS recalcula estos valores cada frame según la posición del
+     ratón sobre la palabra. */
+  --lens-x: 50%;          /* posición X del centro de la lupa */
+  --lens-y: 50%;          /* posición Y del centro de la lupa */
+  --lens-hole: 0px;        /* radio de la zona nítida (0 = sin lupa activa) */
+  --lens-feather: 0px;     /* ancho del desenfoque del borde de la lupa */
+  --lens-blur-opacity: 0;  /* opacidad de la capa borrosa (0 = oculta en reposo) */
+  --lens-grain-opacity: 0.55; /* opacidad del grano (sube un poco con la lupa activa) */
+
+  /* Punto de pivote del bloque de texto: en reposo es el centro, pero
+     mientras el cursor presiona sobre el texto se desplaza a la posición
+     exacta del cursor, para que el giro/inclinación ocurra "anclado" justo
+     ahí, como si esa fuese la zona donde se aplica la presión. */
+  --origin-x: 50%;
+  --origin-y: 50%;
 }
 
 html, body {
@@ -56,7 +74,9 @@ html, body {
 .text3d {
   position: relative;
   transform-style: preserve-3d;
-  transform-origin: center center;
+  /* Pivote dinámico: en reposo el centro, pero JS lo mueve a la posición
+     del cursor mientras se "presiona" el texto (ver --origin-x/--origin-y) */
+  transform-origin: var(--origin-x) var(--origin-y);
   /* escala de ajuste + traslación, tilt 3D, skew y escala dinámica (todo
      calculado por JS según posición y velocidad del cursor) */
   transform:
@@ -88,13 +108,42 @@ html, body {
   transform: translate(-50%, -50%);
 }
 
-/* Capa de relleno: el texto sólido y nítido */
+/* Capa de relleno: el texto sólido y nítido. Siempre visible, sin máscara:
+   es la base que se ve limpia dentro de la lupa y que queda tapada por la
+   capa borrosa + el grano fuera de ella. */
 .layer.fill {
   color: var(--text-color);
   z-index: 50;
 }
 
-/* Capa de grano: textura tipo spray/halftone, recortada a la forma del texto */
+/* Capa borrosa: duplicado del texto, desenfocado, que sólo aparece fuera
+   del círculo de la lupa (--lens-hole). En reposo --lens-blur-opacity es 0
+   y --lens-hole/--lens-feather son 0, así que es invisible y no afecta en
+   nada al aspecto por defecto. */
+.layer.blurred {
+  color: var(--text-color);
+  z-index: 55;
+  filter: blur(9px);
+  opacity: var(--lens-blur-opacity);
+  -webkit-mask-image: radial-gradient(
+    circle at var(--lens-x) var(--lens-y),
+    transparent 0px,
+    transparent var(--lens-hole),
+    #000 calc(var(--lens-hole) + var(--lens-feather))
+  );
+  mask-image: radial-gradient(
+    circle at var(--lens-x) var(--lens-y),
+    transparent 0px,
+    transparent var(--lens-hole),
+    #000 calc(var(--lens-hole) + var(--lens-feather))
+  );
+}
+
+/* Capa de grano: textura tipo spray/halftone, recortada a la forma del texto.
+   Usa la MISMA máscara circular que la capa borrosa, así que el grano
+   también desaparece dentro de la lupa: cuando --lens-hole es 0 (en reposo)
+   la máscara no recorta nada y el grano se ve normal en toda la palabra,
+   igual que antes. */
 .layer.grain {
   color: transparent;
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' seed='11' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
@@ -103,8 +152,20 @@ html, body {
   background-clip: text;
   -webkit-background-clip: text;
   mix-blend-mode: multiply;
-  opacity: 0.55;
+  opacity: var(--lens-grain-opacity);
   z-index: 60;
+  -webkit-mask-image: radial-gradient(
+    circle at var(--lens-x) var(--lens-y),
+    transparent 0px,
+    transparent var(--lens-hole),
+    #000 calc(var(--lens-hole) + var(--lens-feather))
+  );
+  mask-image: radial-gradient(
+    circle at var(--lens-x) var(--lens-y),
+    transparent 0px,
+    transparent var(--lens-hole),
+    #000 calc(var(--lens-hole) + var(--lens-feather))
+  );
 }
 
 /* Área real de detección del cursor sobre el texto: invisible, centrada en
