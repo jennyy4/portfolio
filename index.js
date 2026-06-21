@@ -39,7 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
   text3d.appendChild(grain);
 
   // ---------- Ajuste de tamaño: la palabra ocupa casi todo el ancho ----------
-  const FILL_RATIO = 0.92; // % del ancho del hero que debe ocupar la palabra
+  const FILL_RATIO = 0.5; // % del ancho del hero que debe ocupar la palabra
 
   function fitText() {
     text3d.style.setProperty("--fit-scale", "1");
