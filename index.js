@@ -3,41 +3,54 @@ document.addEventListener("DOMContentLoaded", () => {
   const dispMap = document.getElementById("dispMap");
   const turb = document.getElementById("turb");
 
-  // Mostramos el texto (dispara la transición de opacidad)
+  // Mostramos el texto al cargar la página (fade-in simple)
   requestAnimationFrame(() => {
     text.classList.add("visible");
   });
 
-  // Parámetros de la animación del "grano -> nitidez"
-  const duration = 1400; // ms
-  const startScale = 90;
-  const endScale = 0;
+  // ---------- Parámetros de la distorsión ----------
+  const maxScale = 60;       // intensidad máxima del "warp" al pasar el cursor
+  const baseFreq = 0.02;     // frecuencia base del ruido (textura del warp)
 
-  const startFreq = 0.9;
-  const endFreq = 0.01;
+  let currentScale = 0;
+  let targetScale = 0;
+  let seed = 1;
+  let rafId = null;
 
-  const startTime = performance.now();
+  function render() {
+    // Suavizado hacia el valor objetivo (easing tipo "lerp")
+    currentScale += (targetScale - currentScale) * 0.12;
 
-  function animateGrain(now) {
-    const elapsed = now - startTime;
-    const t = Math.min(elapsed / duration, 1);
+    dispMap.setAttribute("scale", currentScale.toFixed(2));
+    turb.setAttribute("baseFrequency", baseFreq);
 
-    // easing tipo "easeOutCubic" para que se asiente con suavidad
-    const eased = 1 - Math.pow(1 - t, 3);
+    // El seed va cambiando para que el ruido "viva" mientras el cursor está encima
+    seed += 0.6;
+    turb.setAttribute("seed", seed.toFixed(1));
 
-    const currentScale = startScale + (endScale - startScale) * eased;
-    const currentFreq = startFreq + (endFreq - startFreq) * eased;
-
-    dispMap.setAttribute("scale", currentScale);
-    turb.setAttribute("baseFrequency", currentFreq.toFixed(4));
-
-    if (t < 1) {
-      requestAnimationFrame(animateGrain);
+    // Si ya casi no hay distorsión y no se busca ninguna, paramos el bucle
+    if (Math.abs(targetScale - currentScale) > 0.1 || targetScale > 0) {
+      rafId = requestAnimationFrame(render);
     } else {
-      // al terminar, quitamos el filtro para no penalizar rendimiento
-      text.style.filter = "none";
+      currentScale = 0;
+      dispMap.setAttribute("scale", 0);
+      rafId = null;
     }
   }
 
-  requestAnimationFrame(animateGrain);
+  function startRender() {
+    if (!rafId) {
+      rafId = requestAnimationFrame(render);
+    }
+  }
+
+  text.addEventListener("mouseenter", () => {
+    targetScale = maxScale;
+    startRender();
+  });
+
+  text.addEventListener("mouseleave", () => {
+    targetScale = 0;
+    startRender();
+  });
 });
