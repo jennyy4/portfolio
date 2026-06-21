@@ -9,46 +9,28 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // ---------- Parámetros del área nítida (círculo) ----------
-  const maxRadius = 160; // px de radio del área que se ve nítida
-  const ease = 0.15;     // suavizado (lerp): más bajo = más inercia
+  const radius = 160; // px de radio del área que se ve nítida
 
-  let targetX = 0;
-  let targetY = 0;
-  let targetRadius = 0;
-
-  let currentX = 0;
-  let currentY = 0;
-  let currentRadius = 0;
-
-  function handleMove(e) {
+  function updatePosition(e) {
     const rect = wrap.getBoundingClientRect();
-    targetX = e.clientX - rect.left;
-    targetY = e.clientY - rect.top;
-    targetRadius = maxRadius;
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    sharpText.style.setProperty("--mx", `${x}px`);
+    sharpText.style.setProperty("--my", `${y}px`);
   }
 
-  function handleLeave() {
-    targetRadius = 0;
-  }
+  // En cuanto el cursor entra, el círculo nítido aparece de inmediato
+  hero.addEventListener("mouseenter", (e) => {
+    updatePosition(e);
+    sharpText.style.setProperty("--radius", `${radius}px`);
+  });
 
-  hero.addEventListener("mousemove", handleMove);
-  hero.addEventListener("mouseleave", handleLeave);
+  // Mientras se mueve, el círculo sigue al cursor sin retraso
+  hero.addEventListener("mousemove", updatePosition);
 
-  function lerp(a, b, t) {
-    return a + (b - a) * t;
-  }
-
-  function animate() {
-    currentX = lerp(currentX, targetX, ease);
-    currentY = lerp(currentY, targetY, ease);
-    currentRadius = lerp(currentRadius, targetRadius, ease);
-
-    sharpText.style.setProperty("--mx", `${currentX.toFixed(1)}px`);
-    sharpText.style.setProperty("--my", `${currentY.toFixed(1)}px`);
-    sharpText.style.setProperty("--radius", `${currentRadius.toFixed(1)}px`);
-
-    requestAnimationFrame(animate);
-  }
-
-  requestAnimationFrame(animate);
+  // Al salir, deja de verse nítido
+  hero.addEventListener("mouseleave", () => {
+    sharpText.style.setProperty("--radius", "0px");
+  });
 });
