@@ -1,46 +1,34 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const hero = document.querySelector(".hero");
   const text = document.getElementById("mainText");
+  const turb = document.getElementById("turb");
+  const dispMap = document.getElementById("dispMap");
+  const blur = document.querySelector("#grainFilter feGaussianBlur");
 
   // Fade-in al cargar la página
   requestAnimationFrame(() => {
     text.classList.add("visible");
   });
 
-  // ---------- Parámetros del efecto hover ----------
-  const maxMove = 18;   // px que se desplaza el texto siguiendo al cursor
-  const maxBlur = 4;    // px de difuminado máximo en los bordes
+  // ---------- Animación continua tipo "respiración" del grano/blur ----------
+  let t = 0;
 
-  let isHovering = false;
+  function loop() {
+    t += 0.015;
 
-  function handleMove(e) {
-    if (!isHovering) return;
+    // El desplazamiento (warp) oscila suavemente
+    const scale = 8 + Math.sin(t) * 6;          // entre ~2 y ~14
+    dispMap.setAttribute("scale", scale.toFixed(2));
 
-    const rect = text.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
+    // La frecuencia del ruido también varía un poco para que no se vea estático
+    const freq = 0.01 + (Math.sin(t * 0.7) + 1) * 0.004;
+    turb.setAttribute("baseFrequency", freq.toFixed(4));
 
-    // Distancia normalizada del cursor respecto al centro del texto
-    const offsetX = (e.clientX - centerX) / (rect.width / 2);
-    const offsetY = (e.clientY - centerY) / (rect.height / 2);
+    // El desenfoque de los bordes también respira ligeramente
+    const blurAmount = 0.6 + (Math.sin(t * 0.9) + 1) * 0.5; // entre ~0.6 y ~1.6
+    blur.setAttribute("stdDeviation", blurAmount.toFixed(2));
 
-    const moveX = offsetX * maxMove;
-    const moveY = offsetY * maxMove;
-
-    text.style.transform = `translate(${moveX}px, ${moveY}px)`;
-    text.style.filter = `blur(${maxBlur}px)`;
+    requestAnimationFrame(loop);
   }
 
-  text.addEventListener("mouseenter", () => {
-    isHovering = true;
-    text.style.filter = `blur(${maxBlur}px)`;
-  });
-
-  text.addEventListener("mouseleave", () => {
-    isHovering = false;
-    text.style.transform = "translate(0px, 0px)";
-    text.style.filter = "blur(0px)";
-  });
-
-  hero.addEventListener("mousemove", handleMove);
+  requestAnimationFrame(loop);
 });
