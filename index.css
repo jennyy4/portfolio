@@ -122,31 +122,6 @@ html, body {
   background: transparent;
 }
 
-/* ---------- IMAGEN QUE SIGUE AL CURSOR SOBRE EL TEXTO ---------- */
-
-.cursor-img {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 130px;
-  height: 170px;
-  background-color: #1a1a1a; /* color temporal: cambia a tu imagen con background-image */
-  background-size: cover;
-  background-position: center;
-  border-radius: 12px;
-  box-shadow: 0 18px 40px -18px rgba(20, 10, 5, 0.5);
-  opacity: 0;
-  pointer-events: none;
-  z-index: 200;
-  transform: translate(calc(var(--cx, 0px) - 50%), calc(var(--cy, 0px) - 50%)) scale(var(--cursor-scale, 0.85));
-  transition: opacity 0.25s ease;
-  will-change: transform;
-}
-
-.cursor-img.visible {
-  opacity: 1;
-}
-
 /* ---------- IMÁGENES FLOTANTES (rectángulos, al estilo collage) ---------- */
 /* Van por encima del wordmark a propósito: igual que en la referencia,
    donde la foto se monta sobre parte del texto "ARCHITECTES". */
