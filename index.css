@@ -38,6 +38,7 @@ html, body {
   letter-spacing: 0.02em;
   filter: url(#grainFilter);
   opacity: 0;
+  cursor: pointer;
   transition: opacity 0.6s ease;
 }
 
@@ -52,8 +53,8 @@ html, body {
   background-color: #111111; /* rectángulo negro temporal */
   border-radius: 4px;
   opacity: 0;
-  animation: fadeInFloat 1.2s ease forwards, floatMove 6s ease-in-out infinite;
-  animation-delay: 0.3s, 1.4s;
+  animation: fadeInFloat 1.2s ease forwards;
+  animation-delay: 0.3s;
 }
 
 /* tamaños y posiciones aproximadas, estilo "Playfight" */
@@ -65,7 +66,7 @@ html, body {
   max-height: 360px;
   top: 8%;
   left: 12%;
-  animation-duration: 1.2s, 7s;
+  animation-duration: 1.2s;
 }
 
 .img-2 {
@@ -75,7 +76,7 @@ html, body {
   max-height: 210px;
   top: 10%;
   right: 10%;
-  animation-duration: 1.2s, 8s;
+  animation-duration: 1.2s;
 }
 
 .img-3 {
@@ -85,7 +86,7 @@ html, body {
   max-height: 160px;
   top: 42%;
   left: 6%;
-  animation-duration: 1.2s, 6.5s;
+  animation-duration: 1.2s;
 }
 
 .img-4 {
@@ -95,7 +96,7 @@ html, body {
   max-height: 240px;
   top: 40%;
   right: 8%;
-  animation-duration: 1.2s, 7.5s;
+  animation-duration: 1.2s;
 }
 
 .img-5 {
@@ -105,7 +106,7 @@ html, body {
   max-height: 160px;
   bottom: 8%;
   left: 16%;
-  animation-duration: 1.2s, 6s;
+  animation-duration: 1.2s;
 }
 
 .img-6 {
@@ -115,7 +116,7 @@ html, body {
   max-height: 220px;
   bottom: 6%;
   right: 18%;
-  animation-duration: 1.2s, 7s;
+  animation-duration: 1.2s;
 }
 
 @keyframes fadeInFloat {
@@ -129,12 +130,6 @@ html, body {
   }
 }
 
-@keyframes floatMove {
-  0%   { transform: translateY(0px); }
-  50%  { transform: translateY(-14px); }
-  100% { transform: translateY(0px); }
-}
-
 /* Responsive: en pantallas pequeñas ocultamos algunas imágenes para no saturar */
 @media (max-width: 768px) {
   .img-3, .img-4 {
@@ -144,4 +139,5 @@ html, body {
     width: 30vw !important;
     height: 22vw !important;
   }
+}
 }
