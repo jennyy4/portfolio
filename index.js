@@ -5,26 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const WORD = "FRASE";
 
-  // ---------- Capas de halo (resplandor difuminado detrás del texto) ----------
-  // Varias copias borrosas a distinta profundidad: el blur y la translateZ
-  // crean tanto el halo como el parallax al inclinar el logo con el cursor.
-  const GLOW_LAYERS = [
-    { blur: 70, opacity: 0.16, z: -70 },
-    { blur: 40, opacity: 0.26, z: -40 },
-    { blur: 16, opacity: 0.34, z: -16 },
-  ];
-
-  GLOW_LAYERS.forEach((cfg) => {
-    const glow = document.createElement("div");
-    glow.className = "layer glow";
-    glow.textContent = WORD;
-    glow.style.setProperty("--z", `${cfg.z}px`);
-    glow.style.setProperty("--blur", `${cfg.blur}px`);
-    glow.style.setProperty("--depth-opacity", cfg.opacity);
-    text3d.appendChild(glow);
-  });
-
-  // Capa de relleno: el texto sólido y nítido
+  // Capa de relleno: el texto sólido y nítido (sin capas de halo/sombra)
   const fill = document.createElement("div");
   fill.className = "layer fill";
   fill.textContent = WORD;
@@ -39,7 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
   text3d.appendChild(grain);
 
   // ---------- Ajuste de tamaño: la palabra ocupa casi todo el ancho ----------
-  const FILL_RATIO = 0.5; // % del ancho del hero que debe ocupar la palabra
+  const FILL_RATIO = 0.475; // % del ancho del hero que debe ocupar la palabra (5% más pequeño)
 
   function fitText() {
     text3d.style.setProperty("--fit-scale", "1");
