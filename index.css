@@ -99,8 +99,9 @@ html, body {
 .float-img {
   position: absolute;
   display: block;
-  background-color: #d8d4cc; /* placeholder mientras no haya imagen */
-  object-fit: cover;
+  background-color: #1a1a1a; /* color temporal: cambia a tu imagen con background-image */
+  background-size: cover;
+  background-position: center;
   border-radius: 4px;
   opacity: 0;
   animation: fadeInFloat 1.2s ease forwards;
