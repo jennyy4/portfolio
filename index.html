@@ -34,6 +34,8 @@
 
   </section>
 
-  <script src="index.js"></script>
+  <!-- defer asegura que el HTML está completo antes de ejecutar el JS,
+       así getElementById nunca devuelve null -->
+  <script src="index.js" defer></script>
 </body>
 </html>
