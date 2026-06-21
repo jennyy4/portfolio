@@ -1,36 +1,35 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const hero = document.querySelector(".hero");
+  const text = document.getElementById("mainText");
   const wrap = document.getElementById("textWrap");
-  const sharpText = document.getElementById("sharpText");
+  const turb = document.getElementById("turb");
+  const dispMap = document.getElementById("dispMap");
+  const blur = document.querySelector("#grainFilter feGaussianBlur");
 
   // Fade-in al cargar la página
   requestAnimationFrame(() => {
     wrap.classList.add("visible");
   });
 
-  // ---------- Parámetros del área nítida (círculo) ----------
-  const radius = 160; // px de radio del área que se ve nítida
+  // ---------- Animación continua tipo "respiración" del grano/blur ----------
+  let t = 0;
 
-  function updatePosition(e) {
-    const rect = wrap.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+  function loop() {
+    t += 0.015;
 
-    sharpText.style.setProperty("--mx", `${x}px`);
-    sharpText.style.setProperty("--my", `${y}px`);
+    // El desplazamiento (warp) oscila suavemente
+    const scale = 8 + Math.sin(t) * 6; // entre ~2 y ~14
+    dispMap.setAttribute("scale", scale.toFixed(2));
+
+    // La frecuencia del ruido también varía un poco para que no se vea estático
+    const freq = 0.01 + (Math.sin(t * 0.7) + 1) * 0.004;
+    turb.setAttribute("baseFrequency", freq.toFixed(4));
+
+    // El desenfoque de los bordes también respira ligeramente
+    const blurAmount = 0.6 + (Math.sin(t * 0.9) + 1) * 0.5; // entre ~0.6 y ~1.6
+    blur.setAttribute("stdDeviation", blurAmount.toFixed(2));
+
+    requestAnimationFrame(loop);
   }
 
-  // En cuanto el cursor entra, el círculo nítido aparece de inmediato
-  hero.addEventListener("mouseenter", (e) => {
-    updatePosition(e);
-    sharpText.style.setProperty("--radius", `${radius}px`);
-  });
-
-  // Mientras se mueve, el círculo sigue al cursor sin retraso
-  hero.addEventListener("mousemove", updatePosition);
-
-  // Al salir, deja de verse nítido
-  hero.addEventListener("mouseleave", () => {
-    sharpText.style.setProperty("--radius", "0px");
-  });
+  requestAnimationFrame(loop);
 });
