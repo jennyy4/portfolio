@@ -93,3 +93,90 @@ html, body {
     font-size: clamp(2.7rem, 12.6vw, 5.4rem);
   }
 }
+
+/* ---------- IMAGENES (rectángulos temporales, estáticos) ---------- */
+
+.float-img {
+  position: absolute;
+  background-color: #111111; /* rectángulo negro temporal */
+  border-radius: 4px;
+  opacity: 0;
+  animation: fadeInFloat 1.2s ease forwards;
+  animation-delay: 0.3s;
+  z-index: 1;
+}
+
+.img-1 {
+  width: 14vw;
+  height: 20vw;
+  max-width: 260px;
+  max-height: 360px;
+  top: 8%;
+  left: 12%;
+}
+
+.img-2 {
+  width: 18vw;
+  height: 11vw;
+  max-width: 340px;
+  max-height: 210px;
+  top: 10%;
+  right: 10%;
+}
+
+.img-3 {
+  width: 13vw;
+  height: 9vw;
+  max-width: 240px;
+  max-height: 160px;
+  top: 42%;
+  left: 6%;
+}
+
+.img-4 {
+  width: 16vw;
+  height: 13vw;
+  max-width: 300px;
+  max-height: 240px;
+  top: 40%;
+  right: 8%;
+}
+
+.img-5 {
+  width: 12vw;
+  height: 9vw;
+  max-width: 220px;
+  max-height: 160px;
+  bottom: 8%;
+  left: 16%;
+}
+
+.img-6 {
+  width: 17vw;
+  height: 12vw;
+  max-width: 320px;
+  max-height: 220px;
+  bottom: 6%;
+  right: 18%;
+}
+
+@keyframes fadeInFloat {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 768px) {
+  .img-3, .img-4 {
+    display: none;
+  }
+  .float-img {
+    width: 30vw !important;
+    height: 22vw !important;
+  }
+}
