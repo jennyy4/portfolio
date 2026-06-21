@@ -6,10 +6,7 @@
 
 :root {
   --bg-color: #f7f2e9;
-  --text-color: #1a1a1a;
-  --mx: 50%;
-  --my: 50%;
-  --radius: 0px; /* tamaño del área nítida; 0 = sin revelar nada */
+  --text-color: #111111;
 }
 
 html, body {
@@ -38,6 +35,7 @@ html, body {
   justify-content: center;
   opacity: 0;
   transition: opacity 1s ease;
+  z-index: 5;
 }
 
 .text-wrap.visible {
@@ -55,37 +53,7 @@ html, body {
   line-height: 0.95;
   user-select: none;
   white-space: nowrap;
-}
-
-/* Capa base: siempre borrosa */
-.main-text.blurred {
-  position: relative;
-  filter: blur(8px);
-}
-
-/* Capa nítida: se superpone exactamente encima de la borrosa,
-   pero solo se ve dentro del círculo que sigue al cursor */
-.main-text.sharp {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  filter: blur(0px);
-
-  -webkit-mask-image: radial-gradient(
-    circle var(--radius) at var(--mx) var(--my),
-    black 55%,
-    transparent 100%
-  );
-  mask-image: radial-gradient(
-    circle var(--radius) at var(--mx) var(--my),
-    black 55%,
-    transparent 100%
-  );
+  filter: url(#grainFilter);
 }
 
 @media (max-width: 768px) {
