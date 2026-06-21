@@ -2,6 +2,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const hero = document.querySelector(".hero");
   const wrap = document.getElementById("text3dWrap");
   const text3d = document.getElementById("text3d");
+  const textHit = document.getElementById("textHit");
   const cursorImg = document.getElementById("cursorImg");
 
   const WORD = "FRASE";
@@ -20,15 +21,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ---------- Ajuste de tamaño: la palabra ocupa casi todo el ancho ----------
   const FILL_RATIO = 0.4513;
+  const HIT_PADDING = 1.12; // margen extra sobre el texto para que el hover sea más cómodo
 
   function fitText() {
     text3d.style.setProperty("--fit-scale", "1");
     requestAnimationFrame(() => {
-      const naturalWidth = fill.getBoundingClientRect().width;
+      const box = fill.getBoundingClientRect();
+      const naturalWidth = box.width;
+      const naturalHeight = box.height;
       const targetWidth = wrap.clientWidth * FILL_RATIO;
       if (naturalWidth > 0) {
         const scale = targetWidth / naturalWidth;
         text3d.style.setProperty("--fit-scale", scale.toFixed(4));
+
+        // el área de hover real (#textHit) se dimensiona al tamaño final
+        // del texto ya escalado, porque .text3d-wrap colapsa su altura al
+        // tener solo hijos position:absolute y no sirve para detectar hover
+        textHit.style.width = `${(naturalWidth * scale * HIT_PADDING).toFixed(1)}px`;
+        textHit.style.height = `${(naturalHeight * scale * HIT_PADDING).toFixed(1)}px`;
       }
     });
   }
@@ -106,7 +116,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function handleMove(e) {
-    const rect = wrap.getBoundingClientRect();
+    const rect = textHit.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
 
@@ -191,8 +201,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // pueda seguirlo y para detectar cuándo entra/sale del texto), pero el
   // texto solo reacciona con fuerza cuando isOverText es true.
   hero.addEventListener("mousemove", handleMove);
-  wrap.addEventListener("mouseenter", handleEnterText);
-  wrap.addEventListener("mouseleave", handleLeaveText);
+  textHit.addEventListener("mouseenter", handleEnterText);
+  textHit.addEventListener("mouseleave", handleLeaveText);
   hero.addEventListener("mouseleave", () => {
     cursorImg.classList.remove("visible");
   });
