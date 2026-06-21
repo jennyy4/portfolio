@@ -1,38 +1,31 @@
 <!DOCTYPE html>
 <html lang="es">
-<section class="hero">
-  <h1 class="frase-text">FRASE</h1>
-
-  <div class="cursor-image">
-    <img src="img/tu-imagen.jpg" alt="">
-  </div>
-</section>
-
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Texto hover FRASE</title>
-  <link rel="stylesheet" href="index.css" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portfolio</title>
+<link rel="stylesheet" href="index.css">
 </head>
-
 <body>
-  <header class="header">
-    <nav>
-      <a href="#">Proyectos</a>
-      <a href="#">Sobre mí</a>
-      <a href="#">Contacto</a>
-    </nav>
 
-    <button class="menu-btn">Menu</button>
-  </header>
+  <section class="hero" id="hero">
 
-  <main class="hero">
-    <p class="eyebrow">portfolio visual</p>
+    <!-- Imágenes alrededor de la frase -->
+    <div class="float-img img-1"></div>
+    <div class="float-img img-2"></div>
+    <div class="float-img img-3"></div>
+    <div class="float-img img-4"></div>
+    <div class="float-img img-5"></div>
+    <div class="float-img img-6"></div>
 
-    <h1 class="hero-title" data-text="FRASE">
-      FRASE
-    </h1>
-  </main>
+    <!-- Frase central: logo tipográfico 3D -->
+    <div class="text3d-wrap" id="text3dWrap">
+      <div class="text3d" id="text3d">
+        <!-- las capas de profundidad se generan en index.js -->
+      </div>
+    </div>
+
+  </section>
 
   <script src="index.js"></script>
 </body>
