@@ -1,191 +1,60 @@
-* {
+body {
   margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html,
-body {
-  width: 100%;
-  min-height: 100%;
-}
-
-body {
-  background: #f4f0e7;
-  color: #171717;
+  background: #f7e4df;
+  overflow: hidden;
   font-family: Arial, Helvetica, sans-serif;
-  overflow-x: hidden;
 }
-
-/* HEADER */
-
-.header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  padding: 22px 28px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  z-index: 20;
-}
-
-.header nav {
-  display: flex;
-  gap: 22px;
-}
-
-.header a,
-.menu-btn {
-  color: #171717;
-  font-size: 14px;
-  text-decoration: none;
-  text-transform: uppercase;
-  letter-spacing: -0.02em;
-}
-
-.menu-btn {
-  border: 1px solid #171717;
-  background: transparent;
-  padding: 9px 16px;
-  border-radius: 999px;
-  cursor: pointer;
-}
-
-/* HERO */
 
 .hero {
-  min-height: 100vh;
-  padding: 120px 28px 40px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  perspective: 900px;
-}
-
-.eyebrow {
-  margin-bottom: 24px;
-  font-size: clamp(14px, 2vw, 22px);
-  text-transform: uppercase;
-  letter-spacing: -0.03em;
-}
-
-/* TEXTO PRINCIPAL */
-
-.hero-title {
+  width: 100vw;
+  height: 100vh;
   position: relative;
   display: flex;
-  justify-content: center;
   align-items: center;
-  gap: 0.01em;
-  font-size: clamp(80px, 21vw, 310px);
+  justify-content: center;
+}
+
+.frase-text {
+  margin: 0;
+  color: #e33125;
+  font-size: clamp(90px, 18vw, 300px);
   line-height: 0.78;
   font-weight: 900;
-  letter-spacing: -0.1em;
+  letter-spacing: -0.08em;
   text-transform: uppercase;
-  cursor: default;
-  transform-style: preserve-3d;
-  user-select: none;
-}
-
-/* Letras generadas por JS */
-
-.hero-title .char {
-  position: relative;
-  display: inline-block;
-  transform-style: preserve-3d;
+  text-align: center;
+  transform-origin: center center;
+  will-change: transform, filter;
 
   transform:
-    translate3d(
-      calc(var(--mx, 0) * 1px),
-      calc(var(--my, 0) * 1px),
-      calc(var(--depth, 0) * 1px)
-    )
-    rotateX(calc(var(--rx, 0) * 1deg))
-    rotateY(calc(var(--ry, 0) * 1deg))
-    skewX(calc(var(--skew, 0) * 1deg));
+    translate3d(var(--tx, 0px), var(--ty, 0px), 0)
+    rotate(var(--rotate, 0deg))
+    skewX(var(--skew, 0deg))
+    scaleX(var(--scaleX, 1))
+    scaleY(var(--scaleY, 1));
 
-  transition:
-    transform 0.55s cubic-bezier(.16, 1, .3, 1),
-    letter-spacing 0.55s cubic-bezier(.16, 1, .3, 1);
+  filter: blur(var(--blur, 0px));
 }
 
-/* Eco del texto / volumen */
+/* imagen que sigue al cursor, como en el vídeo */
 
-.hero-title .char::before,
-.hero-title .char::after {
-  content: attr(data-char);
-  position: absolute;
-  inset: 0;
+.cursor-image {
+  position: fixed;
+  width: 150px;
+  height: 190px;
+  left: 0;
+  top: 0;
   pointer-events: none;
+  z-index: 5;
+  transform: translate(-50%, -50%);
   opacity: 0;
-  transition:
-    transform 0.55s cubic-bezier(.16, 1, .3, 1),
-    opacity 0.4s ease;
+  transition: opacity 0.25s ease;
+  will-change: transform;
 }
 
-.hero-title .char::before {
-  color: #d86c3f;
-  z-index: -1;
-  transform: translate3d(0, 0, -20px);
-}
-
-.hero-title .char::after {
-  color: #f0b84f;
-  z-index: -2;
-  transform: translate3d(0, 0, -40px);
-}
-
-/* Al pasar el cursor */
-
-.hero-title:hover .char {
-  letter-spacing: -0.04em;
-}
-
-.hero-title:hover .char::before {
-  opacity: 0.9;
-  transform: translate3d(
-    calc(var(--shadow-x, 8) * 1px),
-    calc(var(--shadow-y, 8) * 1px),
-    -35px
-  );
-}
-
-.hero-title:hover .char::after {
-  opacity: 0.65;
-  transform: translate3d(
-    calc(var(--shadow-x, 14) * 1px),
-    calc(var(--shadow-y, 14) * 1px),
-    -70px
-  );
-}
-
-/* Pequeño efecto general */
-
-.hero-title:hover {
-  animation: title-breathe 1.8s ease-in-out infinite alternate;
-}
-
-@keyframes title-breathe {
-  from {
-    transform: scale(1);
-  }
-
-  to {
-    transform: scale(1.015);
-  }
-}
-
-/* RESPONSIVE */
-
-@media (max-width: 700px) {
-  .header nav {
-    display: none;
-  }
-
-  .hero-title {
-    font-size: clamp(72px, 25vw, 160px);
-  }
+.cursor-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
