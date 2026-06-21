@@ -101,3 +101,108 @@ html, body {
   z-index: 10;
   will-change: filter, transform;
 }
+
+/* ---------- IMÁGENES FLOTANTES (rectángulos, al estilo collage) ---------- */
+/* Van por encima del wordmark a propósito: igual que en la referencia,
+   donde la foto se monta sobre parte del texto "ARCHITECTES". */
+
+.float-img {
+  position: absolute;
+  display: block;
+  background-color: #1a1a1a; /* color temporal: cambia a tu imagen con background-image */
+  background-size: cover;
+  background-position: center;
+  border-radius: 14px;
+  box-shadow: 0 18px 40px -22px rgba(20, 10, 5, 0.45);
+  opacity: 0;
+  animation: fadeInFloat 1.2s ease forwards;
+  animation-delay: 0.3s;
+  z-index: 80; /* por encima de .text3d-wrap (z-index: 5) y de las capas de texto */
+}
+
+.img-1 {
+  width: 15vw;
+  height: 22vw;
+  max-width: 270px;
+  max-height: 400px;
+  top: 8%;
+  left: 13%;
+}
+
+.img-2 {
+  width: 19vw;
+  height: 11vw;
+  max-width: 350px;
+  max-height: 200px;
+  top: 10%;
+  right: 9%;
+}
+
+.img-3 {
+  width: 13vw;
+  height: 9vw;
+  max-width: 230px;
+  max-height: 160px;
+  top: 44%;
+  left: 7%;
+}
+
+.img-4 {
+  width: 16vw;
+  height: 16vw;
+  max-width: 290px;
+  max-height: 290px;
+  top: 38%;
+  right: 9%;
+}
+
+.img-5 {
+  width: 11vw;
+  height: 8vw;
+  max-width: 200px;
+  max-height: 150px;
+  bottom: 10%;
+  left: 16%;
+}
+
+.img-6 {
+  width: 22vw;
+  height: 13vw;
+  max-width: 400px;
+  max-height: 240px;
+  bottom: 7%;
+  left: calc(50% - 11vw);
+}
+
+@media (min-width: 1820px) {
+  .img-6 {
+    left: calc(50% - 200px);
+  }
+}
+
+@keyframes fadeInFloat {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 768px) {
+  .img-3, .img-4 {
+    display: none;
+  }
+  .float-img {
+    width: 30vw !important;
+    height: 22vw !important;
+    left: auto;
+    right: auto;
+  }
+  .img-1 { top: 8%; left: 8%; }
+  .img-2 { top: 8%; right: 8%; }
+  .img-5 { bottom: 10%; left: 8%; }
+  .img-6 { bottom: 7%; left: 50%; margin-left: -15vw; }
+}
