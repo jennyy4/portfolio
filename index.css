@@ -93,15 +93,6 @@ html, body {
   z-index: 60;
 }
 
-/* Capas de halo: copias difuminadas del texto detrás, que generan el resplandor */
-.layer.glow {
-  color: var(--text-color);
-  filter: blur(var(--blur, 0px));
-  opacity: var(--depth-opacity, 0.2);
-  z-index: 10;
-  will-change: filter, transform;
-}
-
 /* ---------- IMÁGENES FLOTANTES (rectángulos, al estilo collage) ---------- */
 /* Van por encima del wordmark a propósito: igual que en la referencia,
    donde la foto se monta sobre parte del texto "ARCHITECTES". */
@@ -206,3 +197,4 @@ html, body {
   .img-5 { bottom: 10%; left: 8%; }
   .img-6 { bottom: 7%; left: 50%; margin-left: -15vw; }
 }
+
