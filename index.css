@@ -10,7 +10,9 @@
   --fit-scale: 1;
 
   /* Física elástica del bloque de texto, calculada en JS por frame */
-  --rot: 0deg;       /* rotación según la posición del cursor */
+  --rot: 0deg;       /* rotación Z según la posición del cursor */
+  --tilt-x: 0deg;     /* inclinación 3D en X (volumen) */
+  --tilt-y: 0deg;     /* inclinación 3D en Y (volumen) */
   --skew: 0deg;       /* skew horizontal según la velocidad del cursor */
   --tx: 0px;          /* desplazamiento horizontal */
   --ty: 0px;          /* desplazamiento vertical */
@@ -37,6 +39,7 @@ html, body {
 /* ---------- BLOQUE TIPOGRÁFICO "FRASE" ---------- */
 
 .text3d-wrap {
+  perspective: 1100px;
   width: 100%;
   display: flex;
   align-items: center;
@@ -52,12 +55,15 @@ html, body {
 
 .text3d {
   position: relative;
+  transform-style: preserve-3d;
   transform-origin: center center;
-  /* escala de ajuste + traslación, rotación, skew y escala dinámica (todo
+  /* escala de ajuste + traslación, tilt 3D, skew y escala dinámica (todo
      calculado por JS según posición y velocidad del cursor) */
   transform:
     translate(var(--tx), var(--ty))
-    rotate(var(--rot))
+    rotateX(var(--tilt-x))
+    rotateY(var(--tilt-y))
+    rotateZ(var(--rot))
     skewX(var(--skew))
     scale(calc(var(--fit-scale) * var(--scale-dyn)));
   filter: blur(var(--blur));
@@ -99,6 +105,31 @@ html, body {
   mix-blend-mode: multiply;
   opacity: 0.55;
   z-index: 60;
+}
+
+/* ---------- IMAGEN QUE SIGUE AL CURSOR SOBRE EL TEXTO ---------- */
+
+.cursor-img {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 130px;
+  height: 170px;
+  background-color: #1a1a1a; /* color temporal: cambia a tu imagen con background-image */
+  background-size: cover;
+  background-position: center;
+  border-radius: 12px;
+  box-shadow: 0 18px 40px -18px rgba(20, 10, 5, 0.5);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 200;
+  transform: translate(calc(var(--cx, 0px) - 50%), calc(var(--cy, 0px) - 50%)) scale(var(--cursor-scale, 0.85));
+  transition: opacity 0.25s ease;
+  will-change: transform;
+}
+
+.cursor-img.visible {
+  opacity: 1;
 }
 
 /* ---------- IMÁGENES FLOTANTES (rectángulos, al estilo collage) ---------- */
