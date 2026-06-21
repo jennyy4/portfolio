@@ -6,17 +6,16 @@ document.addEventListener("DOMContentLoaded", () => {
   const wrap = document.getElementById("text3dWrap");
   const text3d = document.getElementById("text3d");
   const textHit = document.getElementById("textHit");
-  const cursorImg = document.getElementById("cursorImg");
 
   // Si falta cualquiera de estos elementos en el HTML, paramos aquí con un
   // aviso claro en consola en lugar de romper todo el script en cascada
   // (que es lo que estaba pasando antes: un elemento null hacía fallar
   // addEventListener/style/getBoundingClientRect y el resto del archivo
   // nunca llegaba a ejecutarse).
-  if (!hero || !wrap || !text3d || !textHit || !cursorImg) {
+  if (!hero || !wrap || !text3d || !textHit) {
     console.error(
       "[text3d] Falta algún elemento en el HTML. Revisa que existan los IDs: " +
-      "text3dWrap, text3d, textHit, cursorImg, y la clase .hero."
+      "text3dWrap, text3d, textHit, y la clase .hero."
     );
     return;
   }
@@ -169,10 +168,6 @@ document.addEventListener("DOMContentLoaded", () => {
       targetBlur = Math.min(speed * 2.2, MAX_BLUR);
     }
 
-    // ---------- Imagen que sigue al cursor ----------
-    cursorImg.style.setProperty("--cx", `${e.clientX}px`);
-    cursorImg.style.setProperty("--cy", `${e.clientY}px`);
-
     lastClientX = e.clientX;
     lastClientY = e.clientY;
     lastTime = now;
@@ -192,14 +187,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function handleEnterText() {
     isOverText = true;
-    cursorImg.classList.add("visible");
-    cursorImg.style.setProperty("--cursor-scale", "1");
   }
 
   function handleLeaveText() {
     isOverText = false;
-    cursorImg.classList.remove("visible");
-    cursorImg.style.setProperty("--cursor-scale", "0.85");
 
     targetRot = 0;
     targetTiltX = 0;
@@ -213,15 +204,12 @@ document.addEventListener("DOMContentLoaded", () => {
     velY = 0;
   }
 
-  // El movimiento del cursor se escucha en todo el hero (para que la imagen
-  // pueda seguirlo y para detectar cuándo entra/sale del texto), pero el
-  // texto solo reacciona con fuerza cuando isOverText es true.
+  // El movimiento del cursor se escucha en todo el hero para detectar
+  // cuándo entra/sale del texto, pero el texto solo reacciona con fuerza
+  // cuando isOverText es true.
   hero.addEventListener("mousemove", handleMove);
   textHit.addEventListener("mouseenter", handleEnterText);
   textHit.addEventListener("mouseleave", handleLeaveText);
-  hero.addEventListener("mouseleave", () => {
-    cursorImg.classList.remove("visible");
-  });
 
   function animate() {
     const e = isActive ? EASE_ACTIVE : EASE_REST;
