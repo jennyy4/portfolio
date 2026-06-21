@@ -7,8 +7,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ---------- Construcción de las capas de profundidad ----------
   // Cuantas más capas, más "cuerpo"/volumen se percibe en el texto.
-  const DEPTH_LAYERS = 16;
-  const MAX_Z = 90; // distancia total (px) entre la capa frontal y la más trasera
+  const DEPTH_LAYERS = 18;
+  const MAX_Z = 110; // distancia total (px) entre la capa frontal y la más trasera
+  const MAX_BLUR = 1.4; // difuminado máximo (px) en la capa más trasera
 
   const FRONT_COLOR = [221, 60, 15];   // #dd3c0f
   const BACK_COLOR  = [74, 24, 12];    // tono oscuro para dar sombra/volumen
@@ -31,6 +32,8 @@ document.addEventListener("DOMContentLoaded", () => {
     layer.style.setProperty("--depth-color", `rgb(${r}, ${g}, ${b})`);
     layer.style.setProperty("--lx", "0px");
     layer.style.setProperty("--ly", "0px");
+    layer.style.setProperty("--blur", `${(t * MAX_BLUR).toFixed(2)}px`);
+    layer.style.setProperty("--depth-opacity", `${(1 - t * 0.12).toFixed(2)}`);
     layer.dataset.depthIndex = i;
 
     text3d.appendChild(layer);
@@ -47,14 +50,40 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const allLayers = text3d.querySelectorAll(".layer");
 
+  // ---------- Ajuste de tamaño: la palabra ocupa casi todo el ancho ----------
+  // En lugar de fijar el font-size, escalamos todo el grupo 3D (--fit-scale).
+  // Así la profundidad (Z) crece proporcionalmente al tamaño del logo.
+  const FILL_RATIO = 0.92; // % del ancho del hero que debe ocupar la palabra
+
+  function fitText() {
+    text3d.style.setProperty("--fit-scale", "1");
+    // Forzamos el cálculo en el frame siguiente para medir el ancho real sin escalar
+    requestAnimationFrame(() => {
+      const naturalWidth = front.getBoundingClientRect().width;
+      const targetWidth = wrap.clientWidth * FILL_RATIO;
+      if (naturalWidth > 0) {
+        const scale = targetWidth / naturalWidth;
+        text3d.style.setProperty("--fit-scale", scale.toFixed(4));
+      }
+    });
+  }
+
+  fitText();
+
+  let resizeTimeout;
+  window.addEventListener("resize", () => {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(fitText, 120);
+  });
+
   // Mostrar con fade-in al cargar
   requestAnimationFrame(() => {
     wrap.classList.add("visible");
   });
 
   // ---------- Reacción al cursor ----------
-  const maxRotate = 12;     // grados máximos de inclinación 3D
-  const maxParallax = 22;   // px máximos de desplazamiento de las capas traseras
+  const maxRotate = 14;     // grados máximos de inclinación 3D
+  const maxParallax = 26;   // px máximos de desplazamiento de las capas traseras
   const ease = 0.07;        // suavizado (lerp) -> inercia del movimiento
 
   let targetRX = 0;
