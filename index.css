@@ -98,7 +98,9 @@ html, body {
 
 .float-img {
   position: absolute;
-  background-color: #111111; /* rectángulo negro temporal */
+  display: block;
+  background-color: #d8d4cc; /* placeholder mientras no haya imagen */
+  object-fit: cover;
   border-radius: 4px;
   opacity: 0;
   animation: fadeInFloat 1.2s ease forwards;
@@ -107,57 +109,63 @@ html, body {
 }
 
 .img-1 {
-  width: 14vw;
-  height: 20vw;
-  max-width: 260px;
-  max-height: 360px;
+  width: 15vw;
+  height: 22vw;
+  max-width: 270px;
+  max-height: 400px;
   top: 8%;
-  left: 12%;
+  left: 13%;
 }
 
 .img-2 {
-  width: 18vw;
+  width: 19vw;
   height: 11vw;
-  max-width: 340px;
-  max-height: 210px;
+  max-width: 350px;
+  max-height: 200px;
   top: 10%;
-  right: 10%;
+  right: 9%;
 }
 
 .img-3 {
   width: 13vw;
   height: 9vw;
-  max-width: 240px;
+  max-width: 230px;
   max-height: 160px;
-  top: 42%;
-  left: 6%;
+  top: 44%;
+  left: 7%;
 }
 
 .img-4 {
   width: 16vw;
-  height: 13vw;
-  max-width: 300px;
-  max-height: 240px;
-  top: 40%;
-  right: 8%;
+  height: 16vw;
+  max-width: 290px;
+  max-height: 290px;
+  top: 38%;
+  right: 9%;
 }
 
 .img-5 {
-  width: 12vw;
-  height: 9vw;
-  max-width: 220px;
-  max-height: 160px;
-  bottom: 8%;
+  width: 11vw;
+  height: 8vw;
+  max-width: 200px;
+  max-height: 150px;
+  bottom: 10%;
   left: 16%;
 }
 
 .img-6 {
-  width: 17vw;
-  height: 12vw;
-  max-width: 320px;
-  max-height: 220px;
-  bottom: 6%;
-  right: 18%;
+  width: 22vw;
+  height: 13vw;
+  max-width: 400px;
+  max-height: 240px;
+  bottom: 7%;
+  left: calc(50% - 11vw);
+}
+
+@media (min-width: 1820px) {
+  .img-6 {
+    left: calc(50% - 200px);
+  }
 }
 
 @keyframes fadeInFloat {
@@ -178,5 +186,11 @@ html, body {
   .float-img {
     width: 30vw !important;
     height: 22vw !important;
+    left: auto;
+    right: auto;
   }
+  .img-1 { top: 8%; left: 8%; }
+  .img-2 { top: 8%; right: 8%; }
+  .img-5 { bottom: 10%; left: 8%; }
+  .img-6 { bottom: 7%; left: 50%; margin-left: -15vw; }
 }
