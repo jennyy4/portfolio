@@ -6,9 +6,10 @@
 
 :root {
   --bg-color: #f7f2e9;
-  --text-color: #dd3c0f;
-  --rx: 0deg;
-  --ry: 0deg;
+  --text-color: #1a1a1a;
+  --mx: 50%;
+  --my: 50%;
+  --radius: 0px; /* tamaño del área nítida; 0 = sin revelar nada */
 }
 
 html, body {
@@ -27,10 +28,10 @@ html, body {
   justify-content: center;
 }
 
-/* ---------- CONTENEDOR 3D ---------- */
+/* ---------- TEXTO PRINCIPAL ---------- */
 
-.text3d-wrap {
-  perspective: 1100px;
+.text-wrap {
+  position: relative;
   width: 100%;
   display: flex;
   align-items: center;
@@ -39,50 +40,56 @@ html, body {
   transition: opacity 1s ease;
 }
 
-.text3d-wrap.visible {
+.text-wrap.visible {
   opacity: 1;
 }
 
-.text3d {
-  position: relative;
-  transform-style: preserve-3d;
-  transform: rotateX(var(--rx)) rotateY(var(--ry));
-  transition: transform 0.05s linear; /* el suavizado real lo hace el lerp en JS */
+.main-text {
+  font-family: Arial, Helvetica, sans-serif;
+  font-weight: 900;
+  font-size: clamp(4rem, 14vw, 13rem);
+  color: var(--text-color);
+  text-align: center;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  line-height: 0.95;
+  user-select: none;
+  white-space: nowrap;
 }
 
-/* Cada capa de profundidad ocupa el mismo espacio, apiladas en Z */
-.layer {
+/* Capa base: siempre borrosa */
+.main-text.blurred {
+  position: relative;
+  filter: blur(8px);
+}
+
+/* Capa nítida: se superpone exactamente encima de la borrosa,
+   pero solo se ve dentro del círculo que sigue al cursor */
+.main-text.sharp {
   position: absolute;
   top: 0;
   left: 0;
-  white-space: nowrap;
-  font-family: "Arial Black", "Helvetica Neue", Arial, sans-serif;
-  font-weight: 900;
-  font-size: clamp(4.5rem, 16vw, 15rem);
-  text-transform: uppercase;
-  letter-spacing: -0.01em;
-  line-height: 1;
-  user-select: none;
-  pointer-events: none;
-  transform: translate(-50%, -50%) translateZ(var(--z)) translate(var(--lx), var(--ly));
-  transform-style: preserve-3d;
-}
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: blur(0px);
 
-/* Capa frontal: nítida y sólida, es la "cara" del logo */
-.layer.front {
-  color: var(--text-color);
-  z-index: 100;
-  filter: none;
-}
-
-/* Capas traseras: construyen el "cuerpo"/volumen del texto */
-.layer.depth {
-  color: var(--depth-color);
-  z-index: 1;
+  -webkit-mask-image: radial-gradient(
+    circle var(--radius) at var(--mx) var(--my),
+    black 55%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(
+    circle var(--radius) at var(--mx) var(--my),
+    black 55%,
+    transparent 100%
+  );
 }
 
 @media (max-width: 768px) {
-  .layer {
+  .main-text {
     font-size: clamp(3rem, 14vw, 6rem);
   }
 }
