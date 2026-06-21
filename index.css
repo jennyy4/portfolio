@@ -5,11 +5,10 @@
 }
 
 :root {
-  --bg-color: #f7f3ec;
-  --text-color: #d3461f;
+  --bg-color: #f7f2e9;
+  --text-color: #dd3c0f;
   --rx: 0deg;
   --ry: 0deg;
-  --blur: 6px;
 }
 
 html, body {
@@ -28,129 +27,62 @@ html, body {
   justify-content: center;
 }
 
-/* ---------- TEXTO PRINCIPAL ---------- */
+/* ---------- CONTENEDOR 3D ---------- */
 
-.text-wrap {
-  perspective: 900px;
+.text3d-wrap {
+  perspective: 1100px;
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.main-text {
-  position: relative;
-  z-index: 5;
-  font-family: Arial, Helvetica, sans-serif;
-  font-weight: 900;
-  font-size: clamp(4rem, 14vw, 13rem);
-  color: var(--text-color);
-  text-align: center;
-  letter-spacing: 0.01em;
-  text-transform: uppercase;
-  line-height: 0.95;
-  user-select: none;
   opacity: 0;
-  transform-style: preserve-3d;
-  transform: rotateX(var(--rx)) rotateY(var(--ry));
-  filter: blur(var(--blur));
-  transition: opacity 0.8s ease;
+  transition: opacity 1s ease;
 }
 
-.main-text.visible {
+.text3d-wrap.visible {
   opacity: 1;
 }
 
-/* ---------- IMAGENES FLOTANTES ---------- */
+.text3d {
+  position: relative;
+  transform-style: preserve-3d;
+  transform: rotateX(var(--rx)) rotateY(var(--ry));
+  transition: transform 0.05s linear; /* el suavizado real lo hace el lerp en JS */
+}
 
-.float-img {
+/* Cada capa de profundidad ocupa el mismo espacio, apiladas en Z */
+.layer {
   position: absolute;
-  background-color: #111111; /* rectángulo negro temporal */
-  border-radius: 4px;
-  opacity: 0;
-  animation: fadeInFloat 1.2s ease forwards;
-  animation-delay: 0.3s;
+  top: 0;
+  left: 0;
+  white-space: nowrap;
+  font-family: "Arial Black", "Helvetica Neue", Arial, sans-serif;
+  font-weight: 900;
+  font-size: clamp(4.5rem, 16vw, 15rem);
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  user-select: none;
+  pointer-events: none;
+  transform: translate(-50%, -50%) translateZ(var(--z)) translate(var(--lx), var(--ly));
+  transform-style: preserve-3d;
 }
 
-/* tamaños y posiciones aproximadas, estilo "Playfight" */
-
-.img-1 {
-  width: 14vw;
-  height: 20vw;
-  max-width: 260px;
-  max-height: 360px;
-  top: 8%;
-  left: 12%;
-  animation-duration: 1.2s;
+/* Capa frontal: nítida y sólida, es la "cara" del logo */
+.layer.front {
+  color: var(--text-color);
+  z-index: 100;
+  filter: none;
 }
 
-.img-2 {
-  width: 18vw;
-  height: 11vw;
-  max-width: 340px;
-  max-height: 210px;
-  top: 10%;
-  right: 10%;
-  animation-duration: 1.2s;
+/* Capas traseras: construyen el "cuerpo"/volumen del texto */
+.layer.depth {
+  color: var(--depth-color);
+  z-index: 1;
 }
 
-.img-3 {
-  width: 13vw;
-  height: 9vw;
-  max-width: 240px;
-  max-height: 160px;
-  top: 42%;
-  left: 6%;
-  animation-duration: 1.2s;
-}
-
-.img-4 {
-  width: 16vw;
-  height: 13vw;
-  max-width: 300px;
-  max-height: 240px;
-  top: 40%;
-  right: 8%;
-  animation-duration: 1.2s;
-}
-
-.img-5 {
-  width: 12vw;
-  height: 9vw;
-  max-width: 220px;
-  max-height: 160px;
-  bottom: 8%;
-  left: 16%;
-  animation-duration: 1.2s;
-}
-
-.img-6 {
-  width: 17vw;
-  height: 12vw;
-  max-width: 320px;
-  max-height: 220px;
-  bottom: 6%;
-  right: 18%;
-  animation-duration: 1.2s;
-}
-
-@keyframes fadeInFloat {
-  from {
-    opacity: 0;
-    transform: translateY(20px) scale(0.96);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-/* Responsive: en pantallas pequeñas ocultamos algunas imágenes para no saturar */
 @media (max-width: 768px) {
-  .img-3, .img-4 {
-    display: none;
-  }
-  .float-img {
-    width: 30vw !important;
-    height: 22vw !important;
+  .layer {
+    font-size: clamp(3rem, 14vw, 6rem);
   }
 }
