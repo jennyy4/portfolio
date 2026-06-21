@@ -10,7 +10,7 @@
   --rx: 0deg;
   --ry: 0deg;
   --fit-scale: 1;
-  --static-tilt: -6deg; /* inclinación fija del logo, como en la referencia */
+  --static-tilt: 0deg; /* recta de inicio: la inclinación solo la da el cursor */
 }
 
 html, body {
@@ -197,4 +197,3 @@ html, body {
   .img-5 { bottom: 10%; left: 8%; }
   .img-6 { bottom: 7%; left: 50%; margin-left: -15vw; }
 }
-
