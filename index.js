@@ -1,9 +1,25 @@
+// Como el <script> se carga con "defer" (ver index.html), el HTML ya está
+// completo cuando esto se ejecuta. Aun así dejamos DOMContentLoaded por
+// seguridad: nunca está de más.
 document.addEventListener("DOMContentLoaded", () => {
   const hero = document.querySelector(".hero");
   const wrap = document.getElementById("text3dWrap");
   const text3d = document.getElementById("text3d");
   const textHit = document.getElementById("textHit");
   const cursorImg = document.getElementById("cursorImg");
+
+  // Si falta cualquiera de estos elementos en el HTML, paramos aquí con un
+  // aviso claro en consola en lugar de romper todo el script en cascada
+  // (que es lo que estaba pasando antes: un elemento null hacía fallar
+  // addEventListener/style/getBoundingClientRect y el resto del archivo
+  // nunca llegaba a ejecutarse).
+  if (!hero || !wrap || !text3d || !textHit || !cursorImg) {
+    console.error(
+      "[text3d] Falta algún elemento en el HTML. Revisa que existan los IDs: " +
+      "text3dWrap, text3d, textHit, cursorImg, y la clase .hero."
+    );
+    return;
+  }
 
   const WORD = "FRASE";
 
