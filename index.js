@@ -2,6 +2,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const hero = document.querySelector(".hero");
   const wrap = document.getElementById("text3dWrap");
   const text3d = document.getElementById("text3d");
+  const cursorImg = document.getElementById("cursorImg");
 
   const WORD = "FRASE";
 
@@ -46,22 +47,26 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // ---------- Física elástica del bloque de texto ----------
-  // El texto se comporta como una masa: el cursor lo empuja (rotación, skew,
-  // desplazamiento, escala y blur según la velocidad) y al soltarlo vuelve
-  // suavemente a su posición de reposo. Todo se calcula en requestAnimationFrame
-  // e interpola (lerp) hacia unos valores objetivo, nunca se aplica directo,
-  // para que el movimiento sea fluido y orgánico, no brusco.
+  // El texto solo reacciona cuando el cursor está ENCIMA de él (no en toda
+  // la pantalla). Se comporta como una masa con volumen: el cursor lo empuja
+  // (tilt 3D, rotación, skew, desplazamiento, escala y blur según la
+  // velocidad) y al soltarlo vuelve suavemente a su posición de reposo, con
+  // una pequeña vibración orgánica de fondo mientras está activo. Todo se
+  // calcula en requestAnimationFrame e interpola (lerp) hacia unos valores
+  // objetivo, nunca se aplica directo, para que el movimiento sea fluido.
 
-  const EASE_ACTIVE = 0.12;   // suavizado mientras el cursor está activo
+  const EASE_ACTIVE = 0.14;   // suavizado mientras el cursor está activo
   const EASE_REST   = 0.055;  // suavizado al volver al reposo (más lento = más orgánico)
 
-  const MAX_ROTATE      = 5;    // grados de rotación máxima según posición del cursor
-  const MAX_SKEW        = 9;    // grados de skew horizontal máximo según velocidad
-  const MAX_MOVE_X      = 22;   // px de desplazamiento horizontal máximo
-  const MAX_MOVE_Y      = 14;   // px de desplazamiento vertical máximo
-  const MAX_SCALE_DELTA = 0.035; // variación de escala máxima por velocidad
-  const MAX_BLUR        = 5;    // px de motion blur máximo
-  const SPEED_CLAMP     = 3.2;  // px/ms tope para no disparar los valores
+  const MAX_ROTATE      = 6;     // grados de rotación Z máxima según posición del cursor
+  const MAX_TILT        = 10;    // grados de inclinación 3D máxima (volumen)
+  const MAX_SKEW        = 8;     // grados de skew horizontal máximo según velocidad
+  const MAX_MOVE_X      = 20;    // px de desplazamiento horizontal máximo
+  const MAX_MOVE_Y      = 12;    // px de desplazamiento vertical máximo
+  const MAX_SCALE_DELTA = 0.03;  // variación de escala máxima por velocidad
+  const MAX_BLUR        = 4.5;   // px de motion blur máximo
+  const SPEED_CLAMP     = 3.2;   // px/ms tope para no disparar los valores
+  const VIBE_AMOUNT     = 1.4;   // px de micro-vibración orgánica máxima
 
   let lastClientX = 0;
   let lastClientY = 0;
@@ -70,10 +75,13 @@ document.addEventListener("DOMContentLoaded", () => {
   let velX = 0; // velocidad horizontal suavizada (px/ms)
   let velY = 0; // velocidad vertical suavizada (px/ms)
 
-  let isActive = false;
+  let isOverText = false; // el cursor está dentro del área del texto
+  let isActive = false;   // hay movimiento reciente (para elegir el ease)
   let idleTimer = null;
 
   let targetRot = 0;
+  let targetTiltX = 0;
+  let targetTiltY = 0;
   let targetSkew = 0;
   let targetTX = 0;
   let targetTY = 0;
@@ -81,6 +89,8 @@ document.addEventListener("DOMContentLoaded", () => {
   let targetBlur = 0;
 
   let curRot = 0;
+  let curTiltX = 0;
+  let curTiltY = 0;
   let curSkew = 0;
   let curTX = 0;
   let curTY = 0;
@@ -115,19 +125,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const speed = clamp(Math.hypot(velX, velY), 0, SPEED_CLAMP);
 
-    // rotación suave: hacia qué lado está el cursor respecto al centro
-    targetRot = offsetX * MAX_ROTATE;
+    if (isOverText) {
+      // rotación Z + inclinación 3D: hacia qué lado está el cursor
+      targetRot = offsetX * MAX_ROTATE;
+      targetTiltX = -offsetY * MAX_TILT; // arriba/abajo -> inclina el "volumen"
+      targetTiltY = offsetX * MAX_TILT;  // izquierda/derecha
 
-    // skew horizontal: el "empujón" lateral, proporcional a la velocidad en X
-    targetSkew = clamp(velX * 7, -MAX_SKEW, MAX_SKEW);
+      // skew horizontal: el "empujón" lateral, proporcional a la velocidad en X
+      targetSkew = clamp(velX * 7, -MAX_SKEW, MAX_SKEW);
 
-    // desplazamiento: el bloque se deja arrastrar un poco hacia el cursor
-    targetTX = offsetX * MAX_MOVE_X;
-    targetTY = offsetY * MAX_MOVE_Y;
+      // desplazamiento: el bloque se deja arrastrar un poco hacia el cursor
+      targetTX = offsetX * MAX_MOVE_X;
+      targetTY = offsetY * MAX_MOVE_Y;
 
-    // escala ligera y blur, ambos en función de la velocidad (no de la posición)
-    targetScale = 1 + Math.min(speed * 0.018, MAX_SCALE_DELTA);
-    targetBlur = Math.min(speed * 2.6, MAX_BLUR);
+      // escala ligera y blur, ambos en función de la velocidad (no de la posición)
+      targetScale = 1 + Math.min(speed * 0.016, MAX_SCALE_DELTA);
+      targetBlur = Math.min(speed * 2.2, MAX_BLUR);
+    }
+
+    // ---------- Imagen que sigue al cursor ----------
+    cursorImg.style.setProperty("--cx", `${e.clientX}px`);
+    cursorImg.style.setProperty("--cy", `${e.clientY}px`);
 
     lastClientX = e.clientX;
     lastClientY = e.clientY;
@@ -146,9 +164,20 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 90);
   }
 
-  function handleLeave() {
-    isActive = false;
+  function handleEnterText() {
+    isOverText = true;
+    cursorImg.classList.add("visible");
+    cursorImg.style.setProperty("--cursor-scale", "1");
+  }
+
+  function handleLeaveText() {
+    isOverText = false;
+    cursorImg.classList.remove("visible");
+    cursorImg.style.setProperty("--cursor-scale", "0.85");
+
     targetRot = 0;
+    targetTiltX = 0;
+    targetTiltY = 0;
     targetSkew = 0;
     targetTX = 0;
     targetTY = 0;
@@ -158,23 +187,46 @@ document.addEventListener("DOMContentLoaded", () => {
     velY = 0;
   }
 
+  // El movimiento del cursor se escucha en todo el hero (para que la imagen
+  // pueda seguirlo y para detectar cuándo entra/sale del texto), pero el
+  // texto solo reacciona con fuerza cuando isOverText es true.
   hero.addEventListener("mousemove", handleMove);
-  hero.addEventListener("mouseleave", handleLeave);
+  wrap.addEventListener("mouseenter", handleEnterText);
+  wrap.addEventListener("mouseleave", handleLeaveText);
+  hero.addEventListener("mouseleave", () => {
+    cursorImg.classList.remove("visible");
+  });
 
   function animate() {
     const e = isActive ? EASE_ACTIVE : EASE_REST;
 
     curRot = lerp(curRot, targetRot, e);
+    curTiltX = lerp(curTiltX, targetTiltX, e);
+    curTiltY = lerp(curTiltY, targetTiltY, e);
     curSkew = lerp(curSkew, targetSkew, e);
     curTX = lerp(curTX, targetTX, e);
     curTY = lerp(curTY, targetTY, e);
     curScale = lerp(curScale, targetScale, e);
     curBlur = lerp(curBlur, targetBlur, e);
 
+    // micro-vibración orgánica: solo mientras el cursor está activo sobre el
+    // texto, una oscilación suave de baja amplitud que da sensación de "vivo"
+    // sin afectar la legibilidad
+    let vibeX = 0;
+    let vibeY = 0;
+    if (isOverText) {
+      const t = performance.now() * 0.018;
+      const speedFactor = clamp(Math.hypot(velX, velY) / SPEED_CLAMP, 0, 1);
+      vibeX = Math.sin(t) * VIBE_AMOUNT * speedFactor;
+      vibeY = Math.cos(t * 1.3) * VIBE_AMOUNT * 0.6 * speedFactor;
+    }
+
     text3d.style.setProperty("--rot", `${curRot.toFixed(2)}deg`);
+    text3d.style.setProperty("--tilt-x", `${curTiltX.toFixed(2)}deg`);
+    text3d.style.setProperty("--tilt-y", `${curTiltY.toFixed(2)}deg`);
     text3d.style.setProperty("--skew", `${curSkew.toFixed(2)}deg`);
-    text3d.style.setProperty("--tx", `${curTX.toFixed(2)}px`);
-    text3d.style.setProperty("--ty", `${curTY.toFixed(2)}px`);
+    text3d.style.setProperty("--tx", `${(curTX + vibeX).toFixed(2)}px`);
+    text3d.style.setProperty("--ty", `${(curTY + vibeY).toFixed(2)}px`);
     text3d.style.setProperty("--scale-dyn", curScale.toFixed(4));
     text3d.style.setProperty("--blur", `${curBlur.toFixed(2)}px`);
 
