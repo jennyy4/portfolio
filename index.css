@@ -107,6 +107,21 @@ html, body {
   z-index: 60;
 }
 
+/* Área real de detección del cursor sobre el texto: invisible, centrada en
+   el hero igual que el texto, con el tamaño exacto que ocupa la palabra
+   renderizada (lo calcula JS, porque .text3d-wrap colapsa su altura al
+   tener solo hijos position:absolute) */
+.text-hit {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  transform: translate(-50%, -50%);
+  z-index: 55; /* por encima del texto, por debajo de las imágenes flotantes */
+  background: transparent;
+}
+
 /* ---------- IMAGEN QUE SIGUE AL CURSOR SOBRE EL TEXTO ---------- */
 
 .cursor-img {
