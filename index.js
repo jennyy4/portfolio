@@ -1,56 +1,46 @@
 document.addEventListener("DOMContentLoaded", () => {
+  const hero = document.querySelector(".hero");
   const text = document.getElementById("mainText");
-  const dispMap = document.getElementById("dispMap");
-  const turb = document.getElementById("turb");
 
-  // Mostramos el texto al cargar la página (fade-in simple)
+  // Fade-in al cargar la página
   requestAnimationFrame(() => {
     text.classList.add("visible");
   });
 
-  // ---------- Parámetros de la distorsión ----------
-  const maxScale = 60;       // intensidad máxima del "warp" al pasar el cursor
-  const baseFreq = 0.02;     // frecuencia base del ruido (textura del warp)
+  // ---------- Parámetros del efecto hover ----------
+  const maxMove = 18;   // px que se desplaza el texto siguiendo al cursor
+  const maxBlur = 4;    // px de difuminado máximo en los bordes
 
-  let currentScale = 0;
-  let targetScale = 0;
-  let seed = 1;
-  let rafId = null;
+  let isHovering = false;
 
-  function render() {
-    // Suavizado hacia el valor objetivo (easing tipo "lerp")
-    currentScale += (targetScale - currentScale) * 0.12;
+  function handleMove(e) {
+    if (!isHovering) return;
 
-    dispMap.setAttribute("scale", currentScale.toFixed(2));
-    turb.setAttribute("baseFrequency", baseFreq);
+    const rect = text.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
 
-    // El seed va cambiando para que el ruido "viva" mientras el cursor está encima
-    seed += 0.6;
-    turb.setAttribute("seed", seed.toFixed(1));
+    // Distancia normalizada del cursor respecto al centro del texto
+    const offsetX = (e.clientX - centerX) / (rect.width / 2);
+    const offsetY = (e.clientY - centerY) / (rect.height / 2);
 
-    // Si ya casi no hay distorsión y no se busca ninguna, paramos el bucle
-    if (Math.abs(targetScale - currentScale) > 0.1 || targetScale > 0) {
-      rafId = requestAnimationFrame(render);
-    } else {
-      currentScale = 0;
-      dispMap.setAttribute("scale", 0);
-      rafId = null;
-    }
-  }
+    const moveX = offsetX * maxMove;
+    const moveY = offsetY * maxMove;
 
-  function startRender() {
-    if (!rafId) {
-      rafId = requestAnimationFrame(render);
-    }
+    text.style.transform = `translate(${moveX}px, ${moveY}px)`;
+    text.style.filter = `blur(${maxBlur}px)`;
   }
 
   text.addEventListener("mouseenter", () => {
-    targetScale = maxScale;
-    startRender();
+    isHovering = true;
+    text.style.filter = `blur(${maxBlur}px)`;
   });
 
   text.addEventListener("mouseleave", () => {
-    targetScale = 0;
-    startRender();
+    isHovering = false;
+    text.style.transform = "translate(0px, 0px)";
+    text.style.filter = "blur(0px)";
   });
+
+  hero.addEventListener("mousemove", handleMove);
 });
